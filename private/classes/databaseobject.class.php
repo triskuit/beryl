@@ -9,7 +9,9 @@ class DatabaseObject
 
     protected static $table_name = "";
 
-    protected static $columns = [];
+    protected static $db_columns = [];
+    
+    protected static $read_only = [];
 
     public $errors = [];
 
@@ -170,10 +172,9 @@ class DatabaseObject
     {
         $attributes = [];
         foreach (static::$db_columns as $column) {
-            if ($column == 'id') {
-                continue;
+            if (!in_array($column, static::$read_only)) {
+                $attributes[$column] = $this->$column;
             }
-            $attributes[$column] = $this->$column;
         }
         return $attributes;
     }

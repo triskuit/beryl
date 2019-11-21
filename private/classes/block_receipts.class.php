@@ -1,54 +1,59 @@
 <?php
 
-class receipt_log extends DatabaseObject
+class block_receipts extends DatabaseObject
 {
-
-    protected static $table_name = "receipt_log";
-
+    
+    protected static $table_name = "block_receipts";
+    
     protected static $db_columns = [
         'id',
         'project_name',
         'block_number',
         'date_created',
-        'date_received',
+        'date_delivered',
         'created_by',
         'delivered_by',
         'block_name',
         'received_status',
         'wrike_id'
     ];
-
+    
+    protected static $read_only = [
+        'id',
+        'received_status',
+        'block_name'
+    ];
+    
     // sample properties
-    public $id, $project_name, $block_number, $date_created, $date_received, $created_by, $delivered_by, $block_name, $received_status, $wrike_id;
-
+    public $id, $project_name, $block_number, $date_created, $date_delivered, $created_by, $delivered_by, $block_name, $received_status, $wrike_id;
+    
     public function __construct($args = [])
     {
         $this->id = $args['id'] ?? 0;
         
         $this->block_number = $args['block_number'] ?? null;
         $this->project_name = $args['project_name'] ?? null;
-
+        
         $this->date_created = $args['date_created'] ?? date("Y-m-d H:i:s");
         $this->date_received = $args['date_received'] ?? null;
-
+        
         $this->created_by = $args['created_by'] ?? null;
         $this->delivered_by = $args['delivered_by'] ?? null;
         
         $this->wrike_id = $args['wrike_id'] ?? null;
-
     }
-
+    
     static public function find($inputs = [], Pagination $pagination = null)
     {
         $args = [];
         $sql = "SELECT * FROM " . static::$table_name;
-
+        
         if (isset($inputs['q'])) {
             // handle query terms
             $sql .= " WHERE UPPER(block_name) LIKE UPPER(?)";
             $q = "%" . $inputs['q'] . "%";
             array_push($args, $q);
-        } 
+        }
         
         if (isset($inputs['manually_entered']) && $inputs['manually_entered'] == "on"){
             // find only blocks created by Greenhouse
@@ -73,7 +78,7 @@ class receipt_log extends DatabaseObject
     {
         $args = [];
         $sql = "SELECT COUNT(*) FROM " . static::$table_name;
-
+        
         if (isset($inputs['q'])) {
             // handle query terms
             $sql .= " WHERE UPPER(block_name) LIKE UPPER(%s)";
@@ -118,18 +123,6 @@ class receipt_log extends DatabaseObject
         }
     }
     
-    public function attributes()
-    {
-        $attributes = [];
-        foreach (static::$db_columns as $column) {
-            if ($column == 'id' || $column == 'block_name' || $column == 'received_status') {
-                continue;
-            }
-            $attributes[$column] = $this->$column;
-        }
-        return $attributes;
-    }
-    
     static function format_date(string $date)
     {
         $date = new DateTime($date);
@@ -152,4 +145,38 @@ class receipt_log extends DatabaseObject
         return false;
     }
     
+    static public function project_exists($project_name)
+    {
+        $sql = "SELECT * FROM " . static::$table_name;
+        $sql .= " WHERE project_name = ?;";
+        $args = [$project_name];
+        $request = static::find_by_sql($sql, $args);
+        $output = count($request);
+        return $output;
+    }
+    
+    static public function create_blocks($project_name,$block_number, $created_by, $wrike_id)
+    {
+        $output = [];
+
+        for ($i = 1; $i <= $block_number; $i++){
+            $block = new block_receipts();
+            $block->project_name = $project_name;
+            $block->block_number = $i;
+            $block->created_by = $created_by;
+            $block->wrike_id = $wrike_id;
+            $block->save();
+            array_push($output, $block);
+        }
+        return $output;
+    }
+    
+    static public function delete_by_project($project_name){
+        $sql = "DELETE FROM " . static::$table_name;
+        $sql .= " WHERE project_name = ?;";
+        $args = [$project_name];
+        $request = static::find_by_sql($sql, $args);
+        return $request ? true : false;
+    }
+
 }

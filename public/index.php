@@ -1,5 +1,5 @@
 <?php
-require_once ("shared/header.php");
+require_once "shared/header.php";
 
 $search_term = $_GET['q'] ?? "";
 global $session;
@@ -7,7 +7,8 @@ global $session;
 if (is_post_request() && isset($_POST['block'])) {
     // update a block to be received
 
-    $block = new receipt_log($_POST['block']);
+    $block = new block_receipts($_POST['block']);
+    // $block = new block_receipts($_POST['block']);
     // set date_received when reciept is registered
     $block->date_received = date("Y-m-d H:i:s");
     $block->save();
@@ -23,9 +24,9 @@ if (is_post_request() && isset($_POST['block'])) {
     redirect_to("index");
 } elseif (is_get_request()) {
     $page = $_GET['page'] ?? 1;
-    $block_count = receipt_log::count_all($_GET);
+    $block_count = block_receipts::count_all($_GET);
     $pagination = new Pagination($page, 10, $block_count);
-    $blocks = receipt_log::find($_GET, $pagination);
+    $blocks = block_receipts::find($_GET, $pagination);
 }
 ?>
 
@@ -74,7 +75,7 @@ if (is_post_request() && isset($_POST['block'])) {
 					<li class="list-group-item list-group-item-action d-flex justify-content-between font-weight-bold"><span class="w-50">Block Name</span> <span
 						class="w-20">Created</span> <span class="w-20">Delivered By</span> <span class="w-10"></span></li>
                 	<?php foreach($blocks as $block){?>
-                		<li class="list-group-item list-group-item-action d-flex justify-content-between"><span class="w-50 overflow-ellipsis "><?php echo $block->block_name?></span>
+                		<li class="list-group-item list-group-item-action d-flex justify-content-between block" data-id="<?php echo $block->id?>"><span class="w-50 overflow-ellipsis "><?php echo $block->block_name?></span>
 						<span class="w-20"><?php echo $block->format_date($block->date_created)?></span> <span class="w-20"><?php echo $block->delivered_by?></span>
 						<a href="" class="btn btn-sm btn-outline-primary w-10" data-toggle="modal" data-target="#exampleModalCenter"
 						data-id="<?php echo $block->id?>">check-in</a></li>
@@ -110,16 +111,31 @@ if (is_post_request() && isset($_POST['block'])) {
 					</button>
 				</div>
 				<div class="modal-body">
-					<select name="block[delivered_by]" class="form-control">
-						<option></option>
-						<?php global $user_list; foreach ($user_list as $user) { echo "<option>$user</option>";} ?>
-					</select>
+    				<div class="form-row mb-2">
+    					<div class="col">
+        					<div class="input-group">
+            					<select name="block[delivered_by]" class="form-control">
+            						<option>Select a user...</option>
+            						<?php global $user_list; foreach ($user_list as $user) { echo "<option>$user</option>";} ?>
+            					</select>
+            					<div class="input-group-append ">
+            						<div class="btn btn-primary">
+            							<i class="fa fa-caret-right" aria-hidden="true" style="line-height: 24px;"></i>
+        							</div>
+            					</div>
+        					</div>
+    					</div>
+					</div>
+					<div class="form-row">
+						<div class="col-6">
+							<button class="btn btn-secondary btn-block">one</button>
+						</div>
+						<div class="col-6">
+							<button class="btn btn-primary btn-block">two</button>
+						</div>
+					</div>
 				</div>
 				<input type="hidden" id="block_id" name="block[id]" value="" />
-				<div class="modal-footer">
-					<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-					<button type="Submit" class="btn btn-primary">Check in</button>
-				</div>
 			</form>
 		</div>
 	</div>
@@ -129,13 +145,21 @@ if (is_post_request() && isset($_POST['block'])) {
 
 <script>
 
-$('#exampleModalCenter').on('show.bs.modal', function (event) {
-	  var button = $(event.relatedTarget)
-	  var id = button.data('id')
-	  var modal = $(this)
-	  modal.find('#block_id').val(id)
-	  console.log(id)
-	})
+// $('#exampleModalCenter').on('show.bs.modal', function (event) {
+// 	  var button = $(event.relatedTarget)
+// 	  var id = button.data('id')
+// 	  var modal = $(this)
+// 	  modal.find('#block_id').val(id)
+// 	  //console.log(id)
+// 	})
+	
+$('.block').click( function(){
+	var id = $(this).data('id')
+	var modal = $('#exampleModalCenter')
+	modal.modal()
+	modal.find('#block_id').val(id)
+	console.log(modal.find('#block_id').val())
+});
 	
 $(document).ready(function() {
     $(':checkbox').change(function() {
