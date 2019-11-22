@@ -123,10 +123,11 @@ class block_receipts extends DatabaseObject
         }
     }
     
-    static function format_date(string $date)
+    static function format_date(?string $date)
     {
-        $date = new DateTime($date);
-        return $date->format('M d');
+        $date_obj = new DateTime($date);
+        return is_null($date) ? "" : $date_obj->format('M d');
+
     }
     
     public function is_project_complete()
@@ -151,8 +152,7 @@ class block_receipts extends DatabaseObject
         $sql .= " WHERE project_name = ?;";
         $args = [$project_name];
         $request = static::find_by_sql($sql, $args);
-        $output = count($request);
-        return $output;
+        return $request ? true : false ;
     }
     
     static public function create_blocks($project_name,$block_number, $created_by, $wrike_id)
