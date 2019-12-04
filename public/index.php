@@ -121,8 +121,8 @@ if (is_post_request() && isset($_POST['block'])) {
 				<div class="modal-body">
     				<div class="form-row mb-4">
     					<div class="col">
-        					<select name="block[delivered_by]" class="form-control" required>
-        						<option value="" disabled selected>Choose a user</option>
+        					<select name="block[delivered_by]" class="form-control" id="user_select" required>
+        						<option disabled selected>Choose a user</option>
         						<?php global $user_list; foreach ($user_list as $user) { echo "<option>$user</option>";} ?>
         					</select>
     					</div>
@@ -132,7 +132,7 @@ if (is_post_request() && isset($_POST['block'])) {
 							</button>
     					</div>
 					</div>
-					<a class="" data-toggle="collapse" href="#options_collapse" role="button" >Other options <i class="fa fa-chevron-circle-right" aria-hidden="true"></i></a>
+					<a class="" data-toggle="collapse" href="#options_collapse" role="button">Other options <i class="fa fa-chevron-circle-right" aria-hidden="true"></i></a>
 					<div class="form-row mt-2 collapse" id="options_collapse">
 						<div class="col-6">
 							<a href="" class="btn btn-outline-secondary btn-block btn-sm">Uncheck</a>
@@ -166,6 +166,8 @@ $('.block').click( function(){
 	modal.modal()
 	modal.find('#block_id').val(id)
 	$('#exampleModalLongTitle').text($(this).data('name'))
+	$('#options_collapse').removeClass("show")
+	$('#user_select').val($('#user_select option:first').val())
 });
 	
 $(document).ready(function() {
