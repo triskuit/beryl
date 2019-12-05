@@ -96,17 +96,22 @@ if (is_post_request() && isset($_POST['block'])) {
 		</div>
 
 		<div class="row  mb-3">
-			<div class="col-auto">
-				<a href="add" class="btn btn-primary">Checkin unlisted block</a>
-			</div>
 			<div class="col">
 				<div class="col d-flex justify-content-center">
-	    			<?php echo $pagination->page_links("")?>
+	    			<?php echo $pagination->page_links($_SERVER['QUERY_STRING'] ? "?" . $_SERVER['QUERY_STRING'] : "")?>
 	    		</div>			
 			</div>
-		</div>
 
+
+		</div>
+		<div class="row">
+			<a href="add" class="btn btn-primary">Checkin unlisted block</a>
+		</div>
+		<div class="row">
+			<?php print_r($_SERVER)?>
+		</div>
 	</div>
+	
 
 	<!-- MODAL BEGIN -->
 	<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -151,14 +156,6 @@ if (is_post_request() && isset($_POST['block'])) {
 </body>
 
 <script>
-
-// $('#exampleModalCenter').on('show.bs.modal', function (event) {
-// 	  var button = $(event.relatedTarget)
-// 	  var id = button.data('id')
-// 	  var modal = $(this)
-// 	  modal.find('#block_id').val(id)
-// 	  //console.log(id)
-// 	})
 	
 $('.block').click( function(){
 	var id = $(this).data('id')

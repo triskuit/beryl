@@ -27,7 +27,7 @@ class Pagination {
     }
     
     public function previous_link($url="") {
-        $linker = strpos($url, "?") > 0 ? "&": "?" ;
+        $linker = strpos($url, "?") !== false ? "&": "?" ;
         $link = "";
         $disabled = $this->previous_page() == false ? " disabled" : "";
         $link .= '<li class="page-item' . $disabled . '">';
@@ -39,7 +39,7 @@ class Pagination {
     }
     
     public function next_link($url="") {
-        $linker = strpos($url, "?") > 0 ? "&": "?" ;
+        $linker = strpos($url, "?") !== false ? "&": "?" ;
         $link = "";
         $disabled = $this->next_page() == false ? " disabled" : "";
         $link .= '<li class="page-item' .  $disabled .'">';
@@ -58,7 +58,7 @@ class Pagination {
                 $output .= "<span class=\"page-link\">{$i}</span>";
                 $output .= '</li>';
             } else {
-                $linker = strpos($url, "?") > 0 ? "&": "?" ;
+                $linker = strpos($url, "?") !== false ? "&": "?" ;
                 $output .= '<li class="page-item">';
                 $output .= "<a href=\"{$url}{$linker}page={$i}\" class=\"page-link\">{$i}</a>";
                 $output .= '</li>';
