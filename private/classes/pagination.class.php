@@ -1,11 +1,21 @@
 <?php
 class Pagination {
-    public $page_current, $page_per, $item_count;
+    public $page_current, $page_per, $item_count, $url;
     
     public function __construct($page_current=1, $page_per=20, $item_count=0){
         $this->item_count = (int) $item_count;
         $this->page_current = (int) $page_current;
         $this->page_per = (int) $page_per;
+        $this->set_url();
+    }
+    
+    public function set_url(){
+        $input = $_SERVER['REQUEST_URI'];
+        $pattern = '/&?page=\d*/';
+        $temp = preg_replace($pattern, "", $input);
+        $temp = is_numeric(strpos($temp, "?")) ? $temp : $temp . "?";
+        $temp = (substr($temp, -1)=="?" || substr($temp, -1)=="&") ? $temp : $temp . "&";
+        $this->url = $temp;
     }
     
     public function offset() {
@@ -26,12 +36,11 @@ class Pagination {
         return ($next <= $this->total_pages()) ? $next : false;
     }
     
-    public function previous_link($url="") {
-        $linker = strpos($url, "?") !== false ? "&": "?" ;
+    public function previous_link() {
         $link = "";
         $disabled = $this->previous_page() == false ? " disabled" : "";
         $link .= '<li class="page-item' . $disabled . '">';
-        $link .= "<a href=\"{$url}{$linker}page={$this->previous_page()}\" class=\"page-link\">";
+        $link .= "<a href=\"{$this->url}page={$this->previous_page()}\" class=\"page-link\">";
         $link .= "&laquo; Previous</a>";
         $link .= '</li>';
         
@@ -39,11 +48,10 @@ class Pagination {
     }
     
     public function next_link($url="") {
-        $linker = strpos($url, "?") !== false ? "&": "?" ;
         $link = "";
         $disabled = $this->next_page() == false ? " disabled" : "";
         $link .= '<li class="page-item' .  $disabled .'">';
-        $link .= "<a href=\"{$url}{$linker}page={$this->next_page()}\" class=\"page-link\">";
+        $link .= "<a href=\"{$this->url}page={$this->next_page()}\" class=\"page-link\">";
         $link .= "next &raquo;</a>";
         $link .= '</li>';
         
@@ -58,9 +66,8 @@ class Pagination {
                 $output .= "<span class=\"page-link\">{$i}</span>";
                 $output .= '</li>';
             } else {
-                $linker = strpos($url, "?") !== false ? "&": "?" ;
                 $output .= '<li class="page-item">';
-                $output .= "<a href=\"{$url}{$linker}page={$i}\" class=\"page-link\">{$i}</a>";
+                $output .= "<a href=\"{$this->url}page={$i}\" class=\"page-link\">{$i}</a>";
                 $output .= '</li>';
             }
         }

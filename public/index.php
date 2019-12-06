@@ -62,8 +62,6 @@ if (is_post_request() && isset($_POST['block'])) {
 						</div>
 						<a href="index" class="text-danger">&times; Clear</a>
 					</div>
-
-
 				</form>
 			</div>
 			<!--  SEARCH BAR END -->
@@ -98,17 +96,15 @@ if (is_post_request() && isset($_POST['block'])) {
 		<div class="row  mb-3">
 			<div class="col">
 				<div class="col d-flex justify-content-center">
-	    			<?php echo $pagination->page_links($_SERVER['QUERY_STRING'] ? "?" . $_SERVER['QUERY_STRING'] : "")?>
+	    			<?php echo $pagination->page_links($_SERVER['REQUEST_URI']) ?>
 	    		</div>			
 			</div>
-
-
 		</div>
 		<div class="row">
 			<a href="add" class="btn btn-primary">Checkin unlisted block</a>
 		</div>
 		<div class="row">
-			<?php print_r($_SERVER)?>
+			<?php //print_r($_SERVER)?>
 		</div>
 	</div>
 	
