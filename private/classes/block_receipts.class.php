@@ -108,7 +108,7 @@ class block_receipts extends DatabaseObject
         
         if (is_blank($this->project_name) && $this->id < 1) {
             $this->errors[] = "Name cannot be blank.";
-        } elseif (! $this::is_unique()) {
+        } elseif (! $this::is_unique() && is_null($this->id)) {
             $this->errors[] = "Block already exists.";
         }
     }
@@ -178,5 +178,15 @@ class block_receipts extends DatabaseObject
         $request = static::find_by_sql($sql, $args);
         return $request ? true : false;
     }
-
+    
+    public function uncheck()
+    {
+        $sql = "UPDATE block_receipts SET date_delivered = NULL, delivered_by = NULL WHERE id={$this->id};";
+        self::$database->query($sql);
+    }
+    
+    static public function update_project_ID($old_ID, $new_ID){
+        //TODO: OVERWRITE OLD ID WITH NEW ID
+        
+    }
 }

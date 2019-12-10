@@ -4,25 +4,45 @@ require_once "shared/header.php";
 $search_term = $_GET['q'] ?? "";
 global $session;
 
+if(isset($_POST['uncheck'])){
+    // uncheck
+    $block = block_receipts::find_by_id($_POST['id']);
+    $block->uncheck();
+    $session->message("Block unchecked", "warning");
+    redirect_to("/");
+}
+
 if (is_post_request() && isset($_POST['block'])) {
     // update a block to be received
-
+    
     $block = new block_receipts($_POST['block']);
-    // $block = new block_receipts($_POST['block']);
     // set date_received when reciept is registered
     $block->date_delivered = date("Y-m-d H:i:s");
     $block->save();
+    
+    $block = block_receipts::find_by_id($block->id);
 
     if ($block->errors) {
         $session->message("Block could not be updated", "danger");
     } else {
         if ($block->is_project_complete()) {
             // TODO write wrike update call here
+            $result = wrike_update_project_start_date($block->wrike_id, date('Y-m-d'));
+            
+            echo "<br />";
+            echo $result ? var_dump($result) : "no response";
+            
+            //TODO: GET NEW ID AND PASS IT IN HERE
+            block_receipts::update_project_ID($block->wrike_id,"");
+            
+            exit;
         }
         $session->message("Block received.");
     }
     redirect_to("index");
-} elseif (is_get_request()) {
+} 
+
+if (is_get_request()) {
     $page = $_GET['page'] ?? 1;
     $block_count = block_receipts::count_all($_GET);
     $pagination = new Pagination($page, 10, $block_count);
@@ -40,7 +60,7 @@ if (is_post_request() && isset($_POST['block'])) {
 
 			<!--  SEARCH BAR BEGIN -->
 			<div class="col-12 mb-5">
-				<form action="" class="m-0 p-0">
+				<form action="" class="m-0 p-0" method="GET">
 					<div class="input-group mb-2">
 						<input class="form-control form-control-lg" type="text" placeholder="Search" name="q" value="<?php echo $search_term?>">
 						<div class="input-group-append">
@@ -87,10 +107,9 @@ if (is_post_request() && isset($_POST['block'])) {
                 </ul>
 			</div>
 			<?php } else {?>
-			<h2 class="mx-auto">No results</h2>
+				<h2 class="mx-auto">No results</h2>
 			<?php }?>
 			<!--  TABLE END -->
-			
 		</div>
 
 		<div class="row  mb-3">
@@ -103,9 +122,6 @@ if (is_post_request() && isset($_POST['block'])) {
 		<div class="row">
 			<a href="add" class="btn btn-primary">Checkin unlisted block</a>
 		</div>
-		<div class="row">
-			<?php //print_r($_SERVER)?>
-		</div>
 	</div>
 	
 
@@ -113,6 +129,7 @@ if (is_post_request() && isset($_POST['block'])) {
 	<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
 		<div class="modal-dialog modal-dialog-centered" role="document">
 			<form class="modal-content" method="POST" action="">
+				<input type="hidden" name="id" value="" id="id" />
 				<div class="modal-header mb-2">
 					<h5 class="modal-title text-center" id="exampleModalLongTitle"></h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -123,7 +140,7 @@ if (is_post_request() && isset($_POST['block'])) {
     				<div class="form-row mb-4">
     					<div class="col">
         					<select name="block[delivered_by]" class="form-control" id="user_select" required>
-        						<option disabled selected>Choose a user</option>
+        						<option disabled selected></option>
         						<?php global $user_list; foreach ($user_list as $user) { echo "<option>$user</option>";} ?>
         					</select>
     					</div>
@@ -136,10 +153,10 @@ if (is_post_request() && isset($_POST['block'])) {
 					<a class="" data-toggle="collapse" href="#options_collapse" role="button">Other options <i class="fa fa-chevron-circle-right" aria-hidden="true"></i></a>
 					<div class="form-row mt-2 collapse" id="options_collapse">
 						<div class="col-6">
-							<a href="" class="btn btn-outline-secondary btn-block btn-sm">Uncheck</a>
+							<?php if(isset($_GET['received'])){?><button class="btn btn-outline-secondary btn-block btn-sm" name="uncheck">Uncheck</button><?php }?>
 						</div>
 						<div class="col-6">
-							<a href="" class="btn btn-outline-danger btn-block btn-sm">Delete</a>
+							<a href="" class="btn btn-outline-danger btn-block btn-sm" id="link_delete">Delete</a>
 						</div>
 					</div>
 				</div>
@@ -161,6 +178,8 @@ $('.block').click( function(){
 	$('#exampleModalLongTitle').text($(this).data('name'))
 	$('#options_collapse').removeClass("show")
 	$('#user_select').val($('#user_select option:first').val())
+	$('#link_delete').attr("href", "/delete?id=" + id)
+	$('#id').val(id)
 });
 	
 $(document).ready(function() {
