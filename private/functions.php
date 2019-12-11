@@ -73,7 +73,7 @@ function print_errors($errors){
 function wrike_update_project_start_date($project_ID, $date){
     // get parent and title
     $project = wrike_get_project_by_ID($project_ID);
-    var_dump($project);
+
     $parent_id = $project['data'][0]['parentIds'][0];
     $project_title = $project['data'][0]['title'];
     
@@ -85,17 +85,19 @@ function wrike_update_project_start_date($project_ID, $date){
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, "parent=$parent_id&title=$project_title&copyParents=false&entryLimit=50&copyDescriptions=true&copyCustomFields=true&copyCustomStatuses=true&copyResponsibles=true&rescheduleMode=Start&rescheduleDate=$date");
     
-    
     $headers = array();
     $headers[] = 'Authorization: bearer ' . ACCESS_KEY;
     $headers[] = 'Content-Type: application/x-www-form-urlencoded';
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     
-    $result = json_decode(curl_exec($ch));
+    $result = json_decode(curl_exec($ch), true);
     if (curl_errno($ch)) {
         echo 'Error:' . curl_error($ch);
     }
     curl_close($ch);
+    
+
+    block_receipts::update_project_ID($project_ID,$result['data'][0]['id']);
     
     return $result;
 }
@@ -113,15 +115,11 @@ function wrike_get_project_by_ID($project_ID){
     $headers[] = 'Authorization: bearer ' . ACCESS_KEY;
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     
-    $result = json_decode(curl_exec($ch), true);
     if (curl_errno($ch)) {
         echo 'Error:' . curl_error($ch);
     }
+    $result = json_decode(curl_exec($ch), true);
     curl_close($ch);
-    
-    if($result){
-        wrike_delete_project_by_ID($project_ID);
-    }
     
     return $result;
 }

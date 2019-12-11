@@ -1,47 +1,43 @@
 <?php
 require_once "shared/header.php";
 
+// page variables
 $search_term = $_GET['q'] ?? "";
 global $session;
 
+// Stuff to uncheck a block
 if(isset($_POST['uncheck'])){
-    // uncheck
+
     $block = block_receipts::find_by_id($_POST['id']);
     $block->uncheck();
     $session->message("Block unchecked", "warning");
     redirect_to("/");
 }
 
+// Update a block as received
 if (is_post_request() && isset($_POST['block'])) {
-    // update a block to be received
     
+    // Set received date to today and save
     $block = new block_receipts($_POST['block']);
-    // set date_received when reciept is registered
     $block->date_delivered = date("Y-m-d H:i:s");
     $block->save();
-    
-    $block = block_receipts::find_by_id($block->id);
 
     if ($block->errors) {
+        // Catch errors
         $session->message("Block could not be updated", "danger");
     } else {
+        //Assuming no errors, update project start date in wrike to today
+        $block = block_receipts::find_by_id($block->id);
         if ($block->is_project_complete()) {
-            // TODO write wrike update call here
-            $result = wrike_update_project_start_date($block->wrike_id, date('Y-m-d'));
-            
-            echo "<br />";
-            echo $result ? var_dump($result) : "no response";
-            
-            //TODO: GET NEW ID AND PASS IT IN HERE
-            block_receipts::update_project_ID($block->wrike_id,"");
-            
-            exit;
+            // Update project with new start date
+            wrike_update_project_start_date($block->wrike_id, date('Y-m-d'));
         }
-        $session->message("Block received.");
+        $session->message("Your block has been received - Thanks!");
     }
-    redirect_to("index");
+    redirect_to($_SERVER['HTTP_REFERER']);
 } 
 
+// Stuff for pagination
 if (is_get_request()) {
     $page = $_GET['page'] ?? 1;
     $block_count = block_receipts::count_all($_GET);

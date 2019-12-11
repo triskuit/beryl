@@ -187,6 +187,13 @@ class block_receipts extends DatabaseObject
     
     static public function update_project_ID($old_ID, $new_ID){
         //TODO: OVERWRITE OLD ID WITH NEW ID
+        $sql = "UPDATE " . static::$table_name;
+        $sql .= " SET wrike_id = ? WHERE wrike_id = ?;";
+        $args = [$new_ID, $old_ID];
+        $request = static::find_by_sql($sql, $args);
         
+        wrike_delete_project_by_ID($old_ID);
+        
+        return $request;
     }
 }

@@ -3,7 +3,7 @@ require_once '../private/initialize.php';
 
 if(is_get_request()){
     
-    //delete for production server
+    //GET METHOD FOR TESTING - delete for production server
     $project_name = $_GET['project_name'] ?? null;
     $block_number= $_GET['block_number']  ?? 0;
     $created_by= $_GET['created_by']  ?? null;
@@ -47,7 +47,6 @@ if(is_post_request()){
         $results = block_receipts::create_blocks($project_name, $block_number, $created_by, $wrike_id);
     }
     
-    //print_r($results);
     echo "success";
     exit;
     
