@@ -9,7 +9,9 @@ global $session;
         if(empty($block->errors)){
             $session->message("Block {$block->block_name} succesfully checked in.", "success");
             redirect_to("index");
-        } //else go an print the errors
+        } else {
+           var_dump($block->errors);
+        }
     }
 ?>
 <body>

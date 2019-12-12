@@ -53,7 +53,6 @@ if (is_get_request()) {
 		</div>
 
 		<div class="row">
-
 			<!--  SEARCH BAR BEGIN -->
 			<div class="col-12 mb-5">
 				<form action="" class="m-0 p-0" method="GET">
@@ -116,7 +115,9 @@ if (is_get_request()) {
 			</div>
 		</div>
 		<div class="row">
-			<a href="add" class="btn btn-primary">Checkin unlisted block</a>
+			<div class="col">
+				<a href="add" class="btn btn-primary">Checkin unlisted block</a>
+			</div>
 		</div>
 	</div>
 	
