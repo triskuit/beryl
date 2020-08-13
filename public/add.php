@@ -8,6 +8,8 @@ global $session;
         $block->save();
         if(empty($block->errors)){
             $session->message("Block {$block->block_name} succesfully checked in.", "success");
+            $client = new Graph();
+            $response = $client->send_email("tristan_krug@cargill.com", "Untracked block checked in: $block->block_name", "");
             redirect_to("index");
         } else {
            var_dump($block->errors);
